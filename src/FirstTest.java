@@ -35,34 +35,89 @@ public class FirstTest {
     }
     @Test
     public void FirstTest() throws Exception {
-        WebElement element_skip = driver.findElementById("org.wikipedia:id/fragment_onboarding_skip_button");
-        element_skip.click();
-
-        WebElement element_search;
-        element_search = waitForElementPresentByXpath("//*[contains(@text,'Search Wikipedia')]", "Элемент не найден", 2);
-        element_search.click();
-        Assert.assertTrue(assertElementHasText("org.wikipedia:id/search_src_text","Search Wikipedia","Текст не найден"));
-
+        WebElement skip_btn = driver.findElementById("org.wikipedia:id/fragment_onboarding_skip_button");
+        skip_btn.click();
+        waitForElementandClick(By.xpath("//*[contains(@text,'Search Wikipedia')]"), "Не удалось найти", 1);
+//        WebElement src_field = waitForElementPresentByXpath("//*[contains(@text,'Search Wikipedia')]", "Cannot_find");
+//        src_field.click();
+        waitForElementandSendKeys(By.xpath("//*[contains(@text,'Search Wikipedia')]"), "Java", "Не удалось найти java", 1);
+        //WebElement src_line = driver.findElementById("org.wikipedia:id/search_src_text");
+        //src_line.sendKeys("Java");
+       waitForElementPresent(By.xpath("//*[@resource-id='org.wikipedia:id/search_results_list']//*[@text='Object-oriented programming language']"), "not_find", 3);
     }
-    private boolean assertElementHasText(String locator, String exp_text, String err_msg) throws Exception {
-        WebElement srch = driver.findElementById(locator);
-        boolean res = driver.findElementById(locator).getText().contains(exp_text);
-        if (res == true) {
-            return res;
-        }
-        else {
-            throw new Exception(err_msg);
-        }
-    }
-    private WebElement waitForElementPresentByXpath(String xpath, String error_msg, long time_out_in_sec)
+    @Test
+    public void testCancelSearch()
     {
-        WebDriverWait wait = new WebDriverWait(driver, time_out_in_sec);
-        wait.withMessage(error_msg + "\n");
-        By by = By.xpath(xpath);
-        return wait.until(ExpectedConditions.presenceOfElementLocated(by));
+        waitForElementandClick(By.id("org.wikipedia:id/fragment_onboarding_skip_button"), "не найдена кнопка", 1);
+        waitForElementandClick(By.id("org.wikipedia:id/search_container"), "не удалось найти id поля поиска", 2);
+        waitForElementandSendKeys(By.xpath("//*[contains(@text,'Search Wikipedia')]"), "Java", "Не удалось найти java", 1);
+        waitForElementAndClear(By.id("org.wikipedia:id/search_src_text"), "не удалось очистить элемент", 2);
+        //waitForElementandClick(By.id("org.wikipedia:id/search_close_btn"), "не удалось найти id кнопки отмены поиска", 2);
+        //waitForElementNotPresent(By.id("org.wikipedia:id/search_close_btn"), "кнопка еще на месте", 2);
+        waitForElementPresent(By.xpath("//*[contains(@text,'Search Wikipedia')]"), "не удалось найти поле", 2);
     }
-    private WebElement waitForElementPresentByXpath(String xpath, String error_msg)
+    @Test
+    public void testCompareArticleTitle()
     {
-        return waitForElementPresentByXpath(xpath, error_msg, 5);
+        waitForElementandClick(By.id("org.wikipedia:id/fragment_onboarding_skip_button"), "не найдена кнопка", 1);
+        waitForElementandClick(By.id("org.wikipedia:id/search_container"), "не удалось найти id поля поиска", 2);
+        waitForElementandSendKeys(By.xpath("//*[contains(@text,'Search Wikipedia')]"), "Java", "Не удалось найти java", 1);
+        waitForElementandClick(By.xpath("//*[@resource-id='org.wikipedia:id/search_results_list']//*[@text='Java (programming language)']"), "not_find", 3);
+        WebElement title_name = waitForElementPresent(By.xpath("//*[contains(@text,'Java (programming language)')]"), "Не удалось найти заголовок статьи", 5);
+        String article_title = title_name.getAttribute("text");
+        Assert.assertEquals("Title is not match", "Java (programming language)", article_title);
+
     }
+    @Test
+    public void findArticlesandClose()
+            // В данном тест-кейсе ищется 3 статьи по слову Carbon, стирается строка пропуска и проверяется, что в поле выдачи пусто
+    {
+        waitForElementandClick(By.id("org.wikipedia:id/fragment_onboarding_skip_button"), "Не найдена кнопка skip", 1);
+        waitForElementandClick(By.id("org.wikipedia:id/search_container"), "не удалось найти id поля поиска", 2);
+        waitForElementandSendKeys(By.xpath("//*[contains(@text,'Search Wikipedia')]"), "Carbon", "Не удалось отправить значение для поиска", 1);
+        waitForElementPresent(By.xpath("//*[contains(@text,'Carbon dioxide')]"), "Не удалось найти элемент по названию", 2);
+        waitForElementPresent(By.xpath("//*[contains(@text,'Carbon nanotube')]"), "Не удалось найти элемент по названию", 2);
+        waitForElementPresent(By.xpath("//*[contains(@text,'Carbohydrate')]"), "Не удалось найти элемент по названию", 2);
+        waitForElementAndClear(By.id("org.wikipedia:id/search_src_text"), "не удалось очистить элемент", 2);
+        waitForElementPresent(By.xpath("//*[contains(@text,'Search Wikipedia')]"), "не удалось найти поле поиска", 2);
+        waitForElementNotPresent(By.xpath("//*[contains(@text,'Carbon dioxide')]"), "Не удалось найти элемент по названию", 2);
+    }
+    private WebElement waitForElementPresent(By by, String err_msg, long time_sec)
+    {
+        WebDriverWait wait = new WebDriverWait(driver, time_sec);
+        wait.withMessage(err_msg + "\n");
+        return wait.until(
+                ExpectedConditions.presenceOfElementLocated(by)
+        );
+    }
+    private WebElement waitForElementPresent(By by, String err_msg)
+    {
+        return waitForElementPresent(by, err_msg, 3);
+    }
+
+    private  WebElement waitForElementandClick(By by, String err_msg, long time_sec)
+    {
+        WebElement element = waitForElementPresent(by,err_msg,time_sec);
+        element.click();
+        return element;
+    }
+    private  WebElement waitForElementandSendKeys(By by, String value, String err_msg, long time_sec)
+    {
+        WebElement element = waitForElementPresent(by,err_msg,time_sec);
+        element.sendKeys(value);
+        return element;
+    }
+    private boolean waitForElementNotPresent(By by, String err_msg, long time_sec)
+    {
+        WebDriverWait wait = new WebDriverWait(driver, time_sec);
+        wait.withMessage(err_msg + "\n");
+        return wait.until(ExpectedConditions.invisibilityOfElementLocated(by));
+    }
+    private WebElement waitForElementAndClear(By by, String err_msg, long time_sec)
+    {
+        WebElement element = waitForElementPresent(by,err_msg,time_sec);
+        element.clear();
+        return element;
+    }
+
 }
