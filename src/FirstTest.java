@@ -13,6 +13,7 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.net.URL;
+import java.util.List;
 
 public class FirstTest {
     private AppiumDriver driver;
@@ -223,6 +224,43 @@ public class FirstTest {
         String article_name_check = title_name_check.getAttribute("text");
         Assert.assertEquals("Искомый заголовок статьи не совпадает с сохраненным",article_name,article_name_check);
     }
+    @Test
+    public void testAmountOfNotEmptySearch()
+    {
+        String search_line ="Linkin park discography";
+        waitForElementandClick(By.id("org.wikipedia:id/fragment_onboarding_skip_button"), "Не найдена кнопка skip", 1);
+        waitForElementandClick(By.id("org.wikipedia:id/search_container"), "не удалось найти id поля поиска", 2);
+        waitForElementandSendKeys(By.xpath("//*[contains(@text,'Search Wikipedia')]"), search_line, "Не удалось отправить значение для поиска", 1);
+        String search_res_loc = "//*[@resource-id='org.wikipedia:id/search_results_list']//*[@resource-id='org.wikipedia:id/page_list_item_title']";
+        waitForElementPresent(By.xpath(search_res_loc),"Cannot find anything by this request" + search_line, 3);
+        int amount_of_seacrh_res = getAmoutofElement(By.xpath(search_res_loc));
+        Assert.assertTrue("Found too many elements",amount_of_seacrh_res>0);
+    }
+    @Test
+    public void testAmountofEmptySearch()
+    {
+        String search_line = "blablablablabla";
+        waitForElementandClick(By.id("org.wikipedia:id/fragment_onboarding_skip_button"), "Не найдена кнопка skip", 1);
+        waitForElementandClick(By.id("org.wikipedia:id/search_container"), "не удалось найти id поля поиска", 2);
+        waitForElementandSendKeys(By.xpath("//*[contains(@text,'Search Wikipedia')]"), search_line, "Не удалось отправить значение для поиска", 1);
+        String search_res_loc = "//*[@resource-id='org.wikipedia:id/search_results_list']//*[@resource-id='org.wikipedia:id/page_list_item_title']";
+        String empty_res_label="//*[contains(@text, 'No results')]";
+        waitForElementPresent(By.xpath(empty_res_label), "Page is not empty by req " + search_line, 2);
+        assertElementNotPresent(By.xpath(search_res_loc), "We found some result by req" + search_line);
+
+    }
+    @Test
+    public void testTitlePage()
+    {
+        String search_line ="Java";
+        waitForElementandClick(By.id("org.wikipedia:id/fragment_onboarding_skip_button"), "Не найдена кнопка skip", 1);
+        waitForElementandClick(By.id("org.wikipedia:id/search_container"), "не удалось найти id поля поиска", 2);
+        waitForElementandSendKeys(By.xpath("//*[contains(@text,'Search Wikipedia')]"), search_line, "Не удалось отправить значение для поиска", 1);
+        waitForElementandClick(By.xpath("//*[@resource-id='org.wikipedia:id/search_results_list']//*[@text='Java (programming language)']"), "Не удалось кликнуть на нужную статью", 2);
+        String target_element = "//*[@resource-id='pcs-edit-section-title-description']";
+        //waitForElementPresent(By.xpath(target_element), "элемент не найден");
+        assertElementPresent(By.xpath(target_element), "Нужный элемент не найден на странице");
+    }
     private WebElement waitForElementPresent(By by, String err_msg, long time_sec)
     {
         WebDriverWait wait = new WebDriverWait(driver, time_sec);
@@ -232,6 +270,7 @@ public class FirstTest {
         );
     }
     private WebElement waitForElementPresent(By by, String err_msg)
+
     {
         return waitForElementPresent(by, err_msg, 3);
     }
@@ -298,6 +337,29 @@ public class FirstTest {
 
         TouchAction action = new TouchAction(driver);
         action.press(right_x, middle_y).waitAction(300).moveTo(left_x,middle_y).release().perform();
+
+    }
+    private int getAmoutofElement(By by)
+    {
+        List elements = driver.findElements(by);
+        return elements.size();
+    }
+    private void assertElementNotPresent(By by, String err_msg)
+    {
+        int amount_of_el = getAmoutofElement(by);
+        if (amount_of_el>0) {
+            String def_msg = "An element '" + by.toString() + "'supposed not to be in present";
+            throw new AssertionError(def_msg + " " + err_msg);
+        }
+    }
+    private void assertElementPresent(By by, String err_msg)
+    {
+        int amount_of_el = getAmoutofElement(by);
+        if (amount_of_el==0)
+        {
+            String def_msg = "An element '" + by.toString() + "'supposed to be in present";
+            throw new AssertionError(def_msg + " " + err_msg);
+        }
 
     }
 
