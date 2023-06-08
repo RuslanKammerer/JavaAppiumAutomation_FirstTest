@@ -69,15 +69,18 @@ public class FirstTest extends CoreTestCase {
     public void testfindArticlesandClose()
             // В данном тест-кейсе ищется 3 статьи по слову Carbon, стирается строка пропуска и проверяется, что в поле выдачи пусто
     {
-        MainPageObject.waitForElementandClick(By.id("org.wikipedia:id/fragment_onboarding_skip_button"), "Не найдена кнопка skip", 1);
-        MainPageObject.waitForElementandClick(By.id("org.wikipedia:id/search_container"), "не удалось найти id поля поиска", 2);
-        MainPageObject.waitForElementandSendKeys(By.xpath("//*[contains(@text,'Search Wikipedia')]"), "Carbon", "Не удалось отправить значение для поиска", 1);
-        MainPageObject.waitForElementPresent(By.xpath("//*[contains(@text,'Carbon dioxide')]"), "Не удалось найти элемент по названию", 2);
-        MainPageObject.waitForElementPresent(By.xpath("//*[contains(@text,'Carbon nanotube')]"), "Не удалось найти элемент по названию", 2);
-        MainPageObject.waitForElementPresent(By.xpath("//*[contains(@text,'Carbohydrate')]"), "Не удалось найти элемент по названию", 2);
-        MainPageObject.waitForElementAndClear(By.id("org.wikipedia:id/search_src_text"), "не удалось очистить элемент", 2);
-        MainPageObject.waitForElementPresent(By.xpath("//*[contains(@text,'Search Wikipedia')]"), "не удалось найти поле поиска", 2);
-        MainPageObject.waitForElementNotPresent(By.xpath("//*[contains(@text,'Carbon dioxide')]"), "Не удалось найти элемент по названию", 2);
+        SearchPageObject  SearchPageObject = new SearchPageObject(driver);
+        SearchPageObject.initSearchInput();
+
+        String search_line = "Carbon";
+        SearchPageObject.typeSearchLine(search_line);
+
+        int  amount_of_search_res = SearchPageObject.getAmountOfFindArticles();
+        assertTrue("Не найдено достаточное кол-во страниц", amount_of_search_res>3);
+
+        SearchPageObject.waitForCancelBtnAppear();
+        SearchPageObject.cliclCancelBtn();
+        SearchPageObject.waitForCancelBtnDissapear();
     }
     @Test
     public void testsaveFirstArticleToList()
@@ -106,80 +109,42 @@ public class FirstTest extends CoreTestCase {
     @Test
     public void testSaveAndDeleteArticles()
     {
-        MainPageObject.waitForElementandClick(By.id("org.wikipedia:id/fragment_onboarding_skip_button"),
-                "Не найдена кнопка пропуска интро",
-                1);
-        MainPageObject.waitForElementandClick(By.id("org.wikipedia:id/search_container"),
-                "не удалось найти id поля поиска статей",
-                2);
-        MainPageObject.waitForElementandSendKeys(By.xpath("//*[contains(@text,'Search Wikipedia')]"),
-                "Java",
-                "Не удалось ввести значения для поиска статьи",
-                1);
-        MainPageObject.waitForElementandClick(By.xpath("//*[@resource-id='org.wikipedia:id/search_results_list']//*[@text='Java (programming language)']"),
-                "Не удалось найти статью",
-                3);
-        WebElement title_name = MainPageObject.waitForElementPresent(By.xpath("//*[contains(@text,'Java (programming language)')]"),
-                "Не удалось найти заголовок статьи",
-                5);
+        SearchPageObject  SearchPageObject = new SearchPageObject(driver);
+        ArticlePageObject ArticlePageObject = new ArticlePageObject(driver);
+        NavigationUI NavigationUi = new NavigationUI(driver);
+        MyListsPageObject MyListPageObject = new MyListsPageObject(driver);
 
-        String article_name = title_name.getAttribute("text");
-
-        MainPageObject.waitForElementandClick(By.id("org.wikipedia:id/page_save"),
-                "Не найдена кнопка для сохранения статьи",
-                2);
-        MainPageObject.waitForElementandClick(By.id("org.wikipedia:id/snackbar_action"),
-                "Не найдена кнопка во всплывающем снек-баре",
-                2);
-
+        String seacrh_line = "Java";
+        String article_1 = "Java (programming language)";
+        String article_2 = "Island in Indonesia";
+        SearchPageObject.initSearchInput();
+        SearchPageObject.typeSearchLine(seacrh_line);
+        SearchPageObject.clickByArticleWithSubstring(article_1);
+        ArticlePageObject.waitForTitleElement();
+        String article_title_1 = ArticlePageObject.getArticleName();
         String name_of_folder = "Test1";
 
-        MainPageObject.waitForElementandSendKeys(By.id("org.wikipedia:id/text_input"), name_of_folder,
-                "Не удалось ввести имя папки для сохранения",
-                1);
-        MainPageObject.waitForElementandClick(By.id("android:id/button1"),
-                "Не найдена кнопка ОК в диалоге",
-                2);
-        MainPageObject.waitForElementandClick(By.xpath("//android.widget.ImageButton[@content-desc='Navigate up']"),
-                "Не удалось выйти в список статей",
-                1);
-        MainPageObject.waitForElementandClick(By.xpath("//*[@resource-id='org.wikipedia:id/search_results_list']//*[@text='Island in Indonesia']"),
-                "Не удалось найти статью",
-                3);
-        MainPageObject.waitForElementandClick(By.id("org.wikipedia:id/page_save"),
-                "Не найдена кнопка для сохранения статьи",
-                2);
-        MainPageObject.waitForElementandClick(By.id("org.wikipedia:id/snackbar_action"),
-                "Не найдена кнопка во всплывающем снек-баре",
-                2);
-        MainPageObject.waitForElementandClick(By.xpath("//*[contains(@text,'"+name_of_folder+"')]"),
-                "Не удалось найти сохраненный список статей",
-                1);
-        MainPageObject.waitForElementandClick(By.xpath("//android.widget.ImageButton[@content-desc='Navigate up']"),
-                "Не удалось выйти назад",
-                1);
-        MainPageObject.waitForElementandClick(By.xpath("//android.widget.ImageButton[@content-desc='Navigate up']"),
-                "Не удалось выйти назад",
-                1);
-        MainPageObject.waitForElementandClick(By.id("org.wikipedia:id/nav_tab_reading_lists"),
-                "Не найдена кнопка навигации для сохраненных статей",
-                2);
-        MainPageObject.waitForElementandClick(By.xpath("//*[contains(@text,'"+name_of_folder+"')]"),
-                "Не удалось найти сохраненный список статей",
-                1);
-        MainPageObject.swipeElemntToLeft(By.xpath("//*[@text='Island in Indonesia']"),
-                "Не удалось найти статью для удаления");
-        MainPageObject.waitForElementNotPresent(By.xpath("//*[contains(@text,'You have no articles added to this list.')]"),
-                "Список статей пустой",
-                2);
-        MainPageObject.waitForElementandClick(By.xpath("//*[contains(@text,'Java (programming language)')]"),
-                "Не удалось найти статью в сохраненном списке статей",
-                3);
-        WebElement title_name_check = MainPageObject.waitForElementPresent(By.xpath("//*[contains(@text,'Java (programming language)')]"),
-                "Не удалось найти заголовок сохраненной статьи",
-                5);
-        String article_name_check = title_name_check.getAttribute("text");
-        assertEquals("Искомый заголовок статьи не совпадает с сохраненным",article_name,article_name_check);
+        ArticlePageObject.addArticleToMyList(name_of_folder);
+        ArticlePageObject.closeArticle();
+
+        SearchPageObject.clickByArticleWithSubstring(article_2);
+        ArticlePageObject.waitForTitleElement();
+        String article_title_2 = ArticlePageObject.getArticleName();
+
+        ArticlePageObject.addArticleToSavedList(name_of_folder);
+        ArticlePageObject.closeArticle();
+        ArticlePageObject.closeArticle();
+
+        NavigationUi.clickToMyLists();
+
+        MyListPageObject.openFolderByName(name_of_folder);
+        MyListPageObject.swipeByArticleToDelete(article_title_1);
+
+        SearchPageObject.clickByArticleWithSubstringInSavedList(article_2);
+        String check_article = ArticlePageObject.getArticleName();
+        assertEquals("Заголовки статей не совпадают", article_title_2, check_article);
+
+
     }
     @Test
     public void testAmountOfNotEmptySearch()
@@ -209,15 +174,18 @@ public class FirstTest extends CoreTestCase {
     }
     @Test
     public void testTitlePage()
-    {
+    {   SearchPageObject  SearchPageObject = new SearchPageObject(driver);
+        ArticlePageObject ArticlePageObject = new ArticlePageObject(driver);
+
+        SearchPageObject.initSearchInput();
+
         String search_line ="Java";
-        MainPageObject.waitForElementandClick(By.id("org.wikipedia:id/fragment_onboarding_skip_button"), "Не найдена кнопка skip", 1);
-        MainPageObject.waitForElementandClick(By.id("org.wikipedia:id/search_container"), "не удалось найти id поля поиска", 2);
-        MainPageObject.waitForElementandSendKeys(By.xpath("//*[contains(@text,'Search Wikipedia')]"), search_line, "Не удалось отправить значение для поиска", 1);
-        MainPageObject.waitForElementandClick(By.xpath("//*[@resource-id='org.wikipedia:id/search_results_list']//*[@text='Java (programming language)']"), "Не удалось кликнуть на нужную статью", 2);
-        String target_element = "//*[@resource-id='pcs-edit-section-title-description']";
-        //waitForElementPresent(By.xpath(target_element), "элемент не найден");
-        MainPageObject.assertElementPresent(By.xpath(target_element), "Нужный элемент не найден на странице");
+        String article_1 = "Java (programming language)";
+
+        SearchPageObject.typeSearchLine(search_line);
+        SearchPageObject.clickByArticleWithSubstring(article_1);
+
+        ArticlePageObject.assertNowElementPresent();
     }
     @Test
     public void testTitleScreenOrientation()

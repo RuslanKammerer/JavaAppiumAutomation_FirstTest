@@ -13,10 +13,17 @@ public class ArticlePageObject extends MainPageObject
             SNACKBAR_ACTION = "org.wikipedia:id/snackbar_action",
             INPUT_TEXT = "org.wikipedia:id/text_input",
             OK_BUTTON = "android:id/button1",
-            NAVIGATE_UP_BTN = "//android.widget.ImageButton[@content-desc='Navigate up']";
+            NAVIGATE_UP_BTN = "//android.widget.ImageButton[@content-desc='Navigate up']",
+            SAVED_READING_LIST_TMP="//*[contains(@text,'{SAVED_LIST}')]",
+            TEST_ELEMENT_PRESENT = "//*[@resource-id='pcs-edit-section-title-description']";
+
     public ArticlePageObject(AppiumDriver driver)
     {
         super(driver);
+    }
+    private static String getSavedFolderByName(String name_of_folder)
+    {
+        return SAVED_READING_LIST_TMP.replace("{SAVED_LIST}", name_of_folder);
     }
     public WebElement waitForTitleElement()
     {
@@ -47,6 +54,22 @@ public class ArticlePageObject extends MainPageObject
                 "not find OK button",
                 2);
     }
+    public void addArticleToSavedList(String saved_list)
+    {
+        String saved_articles_list = getSavedFolderByName(saved_list);
+        this.waitForElementandClick(By.id(SAVE_BUTTON),
+                "not find save button",
+                2);
+        this.waitForElementandClick(By.id(SNACKBAR_ACTION),
+                "not find save button",
+                2);
+        this.waitForElementandClick(By.xpath(saved_articles_list), "Не выбрать сохраненный список для сохранения", 2);
+    }
+    public void assertNowElementPresent()
+    {
+        this.assertElementPresent(By.xpath(TEST_ELEMENT_PRESENT), "Нужный элемент не найден сразу на странице при прогрузке");
+    }
+
     public void closeArticle()
     {
        this.waitForElementandClick(By.xpath(NAVIGATE_UP_BTN),

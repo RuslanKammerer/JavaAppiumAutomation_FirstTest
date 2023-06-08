@@ -12,6 +12,7 @@ public class SearchPageObject extends MainPageObject
             SEARCH_INIT_ELEMENT = "//*[contains(@text,'Search Wikipedia')]",
             SEARCH_INPUT = "//*[contains(@text,'Search Wikipedia')]",
             SEARCH_RESULT_BY_SUBSTRING_TPL = "//*[@resource-id='org.wikipedia:id/search_results_list']//*[@text='{SUBSTRING}']",
+            SEARCH_RESULT_BY_SAVED_SUBSTRING_TPL = "//*[contains(@text,'{SUBSTRING_SV}')]",
             SEARCH_RESULT_ELEMENT= "//*[@resource-id='org.wikipedia:id/search_results_list']//*[@resource-id='org.wikipedia:id/page_list_item_title']",
             EMPTY_SEARCH_RES = "//*[contains(@text, 'No results')]";
     public SearchPageObject(AppiumDriver driver)
@@ -22,6 +23,10 @@ public class SearchPageObject extends MainPageObject
     private static String getResultSearchElement(String substring)
     {
         return SEARCH_RESULT_BY_SUBSTRING_TPL.replace("{SUBSTRING}", substring);
+    }
+    private static String getResultSearchElementInSavedList(String substring)
+    {
+        return SEARCH_RESULT_BY_SAVED_SUBSTRING_TPL.replace("{SUBSTRING_SV}", substring);
     }
     /* Template method */
     public void initSearchInput()
@@ -56,6 +61,12 @@ public class SearchPageObject extends MainPageObject
         String search_Result_Xpath = getResultSearchElement(substring);
         this.waitForElementandClick(By.xpath(search_Result_Xpath), "Не удалось кликнуть на статью с подстрокой " + substring, 2);
     }
+    public void clickByArticleWithSubstringInSavedList(String substring)
+    {
+        String search_Result_Xpath_SV = getResultSearchElementInSavedList(substring);
+        this.waitForElementandClick(By.xpath(search_Result_Xpath_SV), "Не удалось кликнуть на статью с подстрокой " + substring, 2);
+    }
+
     public int getAmountOfFindArticles()
     {
 
